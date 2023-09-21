@@ -1,0 +1,145 @@
+---
+title: MySQL Range Partitioning
+description: This article provides an in-depth understanding and implementation of RANGE partitions in MySQL, with examples demonstrating how to create and manage partitions to optimize database performance and manage large amounts of data.
+date: "2021-04-20"
+published: true
+---
+
+## Introduction
+
+As MySQL continues to gain popularity, the volume of data it stores is also increasing. In everyday work, it is common to encounter tables that hold hundreds of millions or even billions of records, many of which are historical. Managing these historical data can be challenging when all the data are stored in a standard table. Typically, one or more DELETE statements with WHERE conditions (usually based on time) are used to remove data, which can put a considerable load on the database. Even after the deletion, the underlying data files do not shrink. In such cases, using partitioned tables is the most effective solution, with time-based partitioning being the most common approach. One of the significant advantages of partitioning is its ability to manage historical data efficiently.
+
+
+## 1. Types of Partitions
+
+MySQL currently supports four types of partitioning: RANGE, LIST, HASH, and KEY. This article will mainly focus on RANGE partitioning.
+
+
+## 2. RANGE Partitioning
+
+RANGE partitioning assigns rows to partitions based on column values that fall within a specified continuous interval. It is most commonly used with time-based fields. It is preferable to use integer values for partition columns. If the partition is based on a date, functions can be used to convert it to an integer, as demonstrated by the `to_days` function in this example.
+
+
+### 2.1 Creating a Table for Partitioning
+
+
+```sql
+drop table if exists `unmaintained_insurance_logs_bak`;
+CREATE TABLE `unmaintained_insurance_logs_bak` (
+  `id` bigint(10) NOT NULL AUTO_INCREMENT,
+  `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `insurance_no` varchar(63) NOT NULL COMMENT 'insurance number',
+  `insurance_name` varchar(255) NOT NULL COMMENT 'insurance name',
+  `insurance_type` int(10) NOT NULL DEFAULT '0' COMMENT 'insurance type',
+  PRIMARY KEY (`id`,`gmt_create`) USING BTREE,
+  KEY `insurance_no_idx` (`insurance_no`),
+  KEY `insurance_name_idx` (`insurance_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=1812 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT
+
+-- RANGE partition according to the time of entry (after the statement to build the table, note that the statement to build the table can not add a semicolon)
+PARTITION BY RANGE(TO_DAYS(gmt_create))(
+		PARTITION p20191001 VALUES LESS THAN (TO_DAYS('2019-11-01 00:00:00')),
+
+	  	PARTITION p20191101 VALUES LESS THAN (TO_DAYS('2019-12-01 00:00:00')),
+
+   		PARTITION p20191201 VALUES LESS THAN (TO_DAYS('2020-01-01 00:00:00')),
+
+		PARTITION p20200101 VALUES LESS THAN (TO_DAYS('2020-02-01 00:00:00')),
+
+		PARTITION p20200201 VALUES LESS THAN (TO_DAYS('2020-03-01 00:00:00')),
+
+		PARTITION p20200301 VALUES LESS THAN (TO_DAYS('2020-04-01 00:00:00')),
+
+		PARTITION pMaxValue VALUES LESS THAN MAXVALUE
+
+);
+```
+
+
+
+
+### 2.2 Backup old table
+
+
+```sql
+drop table if exists `unmaintained_insurance_logs_temp`;
+ALTER TABLE unmaintained_insurance_logs RENAME TO unmaintained_insurance_logs_temp;
+```
+
+
+### 2.3 Update name for new table
+
+
+```sql
+ALTER TABLE unmaintained_insurance_logs_bak RENAME TO unmaintained_insurance_logs;
+```
+
+
+
+### 2.4 Create function automatically generates a new partition
+
+
+```sql
+delimiter $$
+-- Create function name
+drop procedure if exists partition_unmaintained_insurance_logs;
+CREATE PROCEDURE partition_unmaintained_insurance_logs()
+BEGIN
+-- Create new partitions
+-- Create next month's partitions every month
+SET @cMonth = REPLACE(DATE(DATE_ADD(SYSDATE(),INTERVAL 1 MONTH)),'-','');
+select concat('cMonth is ', @cMonth);
+loop_label: loop
+-- Finds the current largest partition item except MAXVALUE and assigns it to P_Name.
+SELECT REPLACE
+	(partition_name, 'p', '') INTO @P_Name
+FROM
+	INFORMATION_SCHEMA.PARTITIONS
+WHERE
+	table_name = 'unmaintained_insurance_logs'
+	and partition_name <> 'pMaxValue'
+ORDER BY
+	partition_ordinal_position DESC
+	LIMIT 0,1;
+	-- Create a new partition name, which should be one month more than the previous maximum partition value.
+SET @new_part= DATE(DATE_ADD(@P_Name+0, INTERVAL 1 MONTH))+0;
+select concat('new_part is ', @new_part);
+-- Conditional value for the creation of new partitions, each month creating a partition for the following month
+SET @order_date= DATE(DATE_ADD(@new_part+0, INTERVAL 1 MONTH))+0;
+select concat('order_date is ', @order_date);
+-- Loop creation of partitions if new partition rule is less than the next month
+	if @order_date < @cMonth then
+-- Delete maximum partition maxValue
+SELECT COUNT(*) INTO @cnt FROM INFORMATION_SCHEMA.PARTITIONS
+	WHERE TABLE_SCHEMA = 'clie' and table_name='unmaintained_insurance_logs' and partition_name = 'pMaxValue';
+  if @cnt > 0 then
+    SET @s1=CONCAT('ALTER TABLE unmaintained_insurance_logs DROP PARTITION pMaxValue');
+	  SELECT @s1;
+    PREPARE stmt1 FROM @s1;
+    EXECUTE stmt1;
+    DEALLOCATE PREPARE stmt1;
+  end if;
+-- Create new partition statement
+SET @s2=CONCAT('ALTER TABLE unmaintained_insurance_logs ADD PARTITION (PARTITION p',@new_part,' VALUES LESS THAN (TO_DAYS (''',DATE(@order_date),''')))');
+  SELECT @s2;
+  PREPARE stmt2 FROM @s2;
+  EXECUTE stmt2;
+  DEALLOCATE PREPARE stmt2;
+-- Create a maxValue partition for exception data greater than the current time.
+SET @s3=CONCAT('ALTER TABLE unmaintained_insurance_logs ADD PARTITION (PARTITION pMaxValue VALUES LESS THAN MAXVALUE)');
+	SELECT @s3;
+  PREPARE stmt3 FROM @s3;
+  EXECUTE stmt3;
+  DEALLOCATE PREPARE stmt3;
+     iterate loop_label;
+  end if;
+-- If the month of the new partition is greater than the current month, stop creating the partition.
+  if @order_date > @cMonth then
+     leave loop_label;
+  end if;
+  end loop loop_label;
+	COMMIT ;
+END $$
+DELIMITER ;
+```

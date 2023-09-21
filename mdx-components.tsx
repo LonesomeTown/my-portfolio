@@ -11,7 +11,7 @@ export function useMDXComponents(components: any): any {
 		),
 		h2: ({ children }: PropsWithChildren) => (
 			<h2 className="text-zinc-50">{children}</h2>
-		),
+        ),
 		...components,
 	};
 }

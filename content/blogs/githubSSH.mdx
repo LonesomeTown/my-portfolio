@@ -1,0 +1,62 @@
+---
+title: Github SSH Setup
+description: This document outlines the steps to set up Git SSH and Jenkins Public Key and addresses the problems encountered during the process.
+date: "2023-09-20"
+published: true
+---
+
+## Steps
+
+### 1. Generate SSH Key on Jenkins Server
+
+Run the following command on the Jenkins server to generate an SSH key:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+### **2. Add Public Key to GitHub**
+
+After generating the SSH key, add the public key (**`id_rsa.pub`**) to your GitHub account under SSH and GPG keys in the settings.
+
+- Go to **[GitHub](https://github.com/)** and log in to your account.
+- Click on your profile picture in the top right corner and navigate to **`Settings`**.
+- Scroll down to the **`SSH and GPG keys`** section and click on **`New SSH key`**.
+- Give your key a descriptive title, such as "Jenkins Server".
+- Copy the contents of your **`id_rsa.pub`** file and paste it into the **`Key`** field.
+- Click **`Add SSH Key`** to save the changes.
+
+### **3. Modify SSH Config**
+
+Create or modify the **`~/.ssh/config`** file to use the generated SSH key when connecting to GitHub. Add the following:
+
+```bash
+Host github.com
+  User git
+  IdentityFile /path/to/your/ssh/key
+```
+
+### **4. Test SSH Connection**
+
+Test the SSH connection to GitHub using the following command:
+
+```bash
+ssh -T git@github.com
+```
+
+### **5. Create Credentials in Jenkins**
+
+To create credentials in Jenkins, perform the following steps:
+
+- Navigate to Jenkins and log in.
+- Go to **`Manage Jenkins`** > **`Manage Credentials`**.
+- Under **`(global)`**, click **`(Add)`**.
+- Click on **`Jenkins`**.
+- In the kind field, choose **`SSH Username with private key`**.
+- Enter the **`ID`**, **`Description`**, and **`Username`** (usually **`git`** for GitHub).
+- For the **`Private Key`**, choose **`Enter directly`** and paste the contents of your private key (**`id_rsa`**) file.
+- Click **`OK`** to save the credentials.
+
+### **6. Configure Jenkins**
+
+In Jenkins, configure the project's source code management to use SSH when pulling from GitHub.
