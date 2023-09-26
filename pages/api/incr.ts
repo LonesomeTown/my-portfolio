@@ -12,10 +12,16 @@ export default async function incr(req: NextRequest): Promise<NextResponse> {
 	}
 	if (req.headers.get("Content-Type") !== "application/json") {
 		return new NextResponse("must be json", { status: 400 });
-	}
-
-	const body = await req.json();
-	let slug: string | undefined = undefined;
+    }
+    const body = await req.json();
+    let unit: string | undefined = undefined;
+    let slug: string | undefined = undefined;
+    if ("unit" in body) {
+        unit = body.unit;
+    }
+    if (!unit) {
+        return new NextResponse("Unit is required", { status: 400 });
+    }
 	if ("slug" in body) {
 		slug = body.slug;
 	}
@@ -42,6 +48,6 @@ export default async function incr(req: NextRequest): Promise<NextResponse> {
 			new NextResponse(null, { status: 202 });
 		}
 	}
-	await redis.incr(["pageviews", "projects", slug].join(":"));
+	await redis.incr(["pageviews", unit, slug].join(":"));
 	return new NextResponse(null, { status: 202 });
 }

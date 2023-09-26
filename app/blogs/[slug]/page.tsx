@@ -3,7 +3,7 @@ import { allBlogs } from "contentlayer/generated";
 import { Mdx } from "@/app/components/mdx";
 import { Header } from "./header";
 import "./mdx.css";
-import { ReportView } from "./view";
+import { ReportView } from "../../view";
 import { Redis } from "@upstash/redis";
 
 export const revalidate = 60;
@@ -38,7 +38,7 @@ export default async function PostPage({ params }: Props) {
 	return (
 		<div className="bg-zinc-50 min-h-screen">
 			<Header blog={blog} views={views} />
-			<ReportView slug={blog.slug} />
+            <ReportView unit="blogs" slug={blog.slug} />
 
 			<article className="px-4 py-12 mx-auto prose prose-zinc prose-quoteless">
 				<Mdx code={blog.body.code} />
