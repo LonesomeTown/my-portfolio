@@ -22,6 +22,8 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@v2.0.1
       with:
         projectBaseDir: app
+        args: >
+         -Dsonar.projectKey=LonesomeTown_my-portfolio_AYr2Egh_yDoZ3Ah6afEm
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
