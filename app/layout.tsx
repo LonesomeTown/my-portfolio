@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 		siteName: "zhiminwang.com",
 		images: [
 			{
-				url: "https://chronark.com/og.png",
+				url: "/firstPage.png",
 				width: 1920,
 				height: 1080,
 			},
@@ -54,7 +54,7 @@ const calSans = LocalFont({
 export default function RootLayout({
 	children,
 }: {
-	children: React.ReactNode;
+	children: Readonly<React.ReactNode>;
 }) {
 	return (
 		<html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
