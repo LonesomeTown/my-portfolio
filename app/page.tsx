@@ -50,20 +50,19 @@ export default function Home() {
 			<div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
 			<div className="my-16 text-center animate-fade-in">
 				<h2 className="text-sm text-zinc-500 ">
-                    As an accomplished software developer with a rich background in crafting innovative solutions, I am currently exploring
+                    As an accomplished software engineer with a rich background in crafting innovative solutions, I am currently exploring
                     <br />
-                    exciting new job opportunities. With a passion for technology and a commitment to delivering high-quality work,
+                    exciting new job opportunities. I am with a passion for technology and a commitment to delivering high-quality work.
                     <br />
-                    I bring a wealth of experience and a keen eye for detail to every project.
-                    <br />
-                    {/* Visit my {" "} to learn more about my professional journey and the unique skills I offer.
-					<Link
-						target="_blank"
-						href="/projects"
-						className="underline duration-500 hover:text-zinc-300"
-					>
-						projects
-					</Link> */}
+                    If you&apos;re interested, please click {" "}
+                    <Link
+                        href="/Resume_Zhimin.pdf"
+                        target="_blank"
+                        className="underline duration-500 hover:text-zinc-300"
+                    >
+                        here
+                    </Link>
+                    {" "} to view my resume.
 				</h2>
             </div>
 		</div>
