@@ -1,9 +1,9 @@
+# Use the Node.js base image
+FROM node:latest
+
 # Add Build Args
 ARG UPSTASH_REDIS_REST_URL
 ARG UPSTASH_REDIS_REST_TOKEN
-
-# Use the Node.js base image
-FROM node:latest
 
 RUN echo "UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}"
 RUN echo "UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}"
