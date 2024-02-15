@@ -33,6 +33,6 @@ jobs:
       with:
         push: true
         tags: |
-          yourusername/yourrepo:latest
-          yourusername/yourrepo:${{ steps.tag_name.outputs.TAG }}
-          yourusername/yourrepo:commit-${GITHUB_SHA::8}
+          zhiminwang/my-portfolio:latest
+          zhiminwang/my-portfolio:${{ steps.tag_name.outputs.TAG }}
+          zhiminwang/my-portfolio:commit-${GITHUB_SHA::8}
