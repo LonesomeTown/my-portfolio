@@ -21,8 +21,10 @@ jobs:
 
     - name: Bump version and push tag
       uses: anothrNick/github-tag-action@1.64.0
+      with:
+        RELEASE_BRANCHES: main
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         INITIAL_VERSION: '0.1.0'
         DEFAULT_BUMP: patch # Default type of increment
         WITH_V: true # Optional
