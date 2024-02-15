@@ -1,0 +1,16 @@
+# Do not include the .git directory
+.git/
+
+# Do not include local environment files
+*.env.local
+.env
+
+# Ignore development-specific files
+node_modules/
+*.log
+*.tsbuildinfo
+
+# Ignore the README
+README.md
+
+# Ignore any other non-essential files
