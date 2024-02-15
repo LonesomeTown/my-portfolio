@@ -44,9 +44,11 @@ jobs:
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
+      env:
+        UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+        UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
       with:
         push: true
         tags: |
           zhiminwang/my-portfolio:latest
           zhiminwang/my-portfolio:${{ steps.bump_version.outputs.new_tag }}
-      id: build_and_push
