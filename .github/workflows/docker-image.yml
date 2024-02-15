@@ -24,6 +24,9 @@ jobs:
         DEFAULT_BUMP: patch # Default type of increment
         WITH_V: true # Optional
       id: bump_version
+
+    - name: Output new version
+      run: echo "The new version is ${{ steps.bump_version.outputs.new_tag }}"
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -42,6 +45,3 @@ jobs:
           zhiminwang/my-portfolio:latest
           zhiminwang/my-portfolio:${{ steps.bump_version.outputs.new_tag }}
       id: build_and_push
-
-    - name: Output new version
-      run: echo "The new version is ${{ steps.bump_version.outputs.new_tag }}"
