@@ -16,8 +16,11 @@ jobs:
       with:
         fetch-depth: '0' # Be sure to fetch all tags
 
+    - name: Bypass Git safe directory check
+      run: git config --global --add safe.directory /github/workspace
+
     - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.30.0
+      uses: anothrNick/github-tag-action@1.64.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         INITIAL_VERSION: '0.1.0'
