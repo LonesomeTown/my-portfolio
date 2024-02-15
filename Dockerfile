@@ -1,3 +1,7 @@
+# Add Build Args
+ARG UPSTASH_REDIS_REST_URL
+ARG UPSTASH_REDIS_REST_TOKEN
+
 # Use the Node.js base image
 FROM node:latest
 
@@ -18,3 +22,4 @@ RUN npm run build
 
 # Set the command to start the node server
 CMD ["npm", "start"]
+
